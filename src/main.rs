@@ -154,6 +154,10 @@ fn count_bad_opens( threshold: f32,  ps: &Vec<Pixel> ) -> u64 {
 
 
 fn vd_action(  _de: DirEntry, files: &mut Vec<DirEntry> ) {
+    
+    if fs::metadata( &_de.path() ).unwrap().is_dir() {
+        println!( "{:?}\\",_de.path()  );
+    }
     files.push( _de );
 }
 
@@ -166,12 +170,13 @@ fn vd_action(  _de: DirEntry, files: &mut Vec<DirEntry> ) {
 fn visit_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(DirEntry) {
     if fs::metadata( dir ).unwrap().is_dir() {
         for entry in try!(fs::read_dir(dir)) {
-            let entry = try!(entry);
-            if fs::metadata( &entry.path() ).unwrap().is_dir() {
-                // cb(entry);
-                try!(visit_dirs(&entry.path(), cb));
+            let this_entry = try!(entry);
+            if fs::metadata( &this_entry.path() ).unwrap().is_dir() {
+                let this_entry_path = &this_entry.path();
+                cb(this_entry);
+                try!(visit_dirs(this_entry_path, cb));
             } else {
-                cb(entry);
+                cb(this_entry);
             }
         }
     }
@@ -195,9 +200,9 @@ fn main() {
     let mut files = Vec::with_capacity(100);
     visit_dirs(input_dir, &mut |entry| vd_action( entry, &mut files ) ).unwrap();
     for file in files {
-        if fs::metadata( file.path() ).unwrap().is_dir() {
-            println!("{}\\ \n", file.path().display());
-        }
+//        if fs::metadata( file.path() ).unwrap().is_dir() {
+//            println!("{}\\ \n", file.path().display());
+//        }
         println!("{} \n", file.path().display());
     }
 
