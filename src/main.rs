@@ -153,30 +153,55 @@ fn count_bad_opens( threshold: f32,  ps: &Vec<Pixel> ) -> u64 {
 
 
 
-fn vd_action(  _de: DirEntry, files: &mut Vec<DirEntry> ) {
+fn vd_action(  this_entry: DirEntry, files: &mut Vec<DirEntry> ) {
     
-    if fs::metadata( &_de.path() ).unwrap().is_dir() {
-        println!( "{:?}\\",_de.path()  );
+    if fs::metadata( &this_entry.path() ).unwrap().is_dir() {
+        println!( " is a dir: ignoring it {:?}\\",this_entry.path()  );
+    } else {
+        let this_entry_path = &this_entry.path();
+        let is_reset_file = this_entry_path.to_str().unwrap().contains("PNReset");
+        if is_reset_file {
+            files.push( this_entry );
+        }
     }
-    files.push( _de );
 }
 
+fn process_tail_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(DirEntry) {
+    if fs::metadata( dir ).unwrap().is_dir() {
+        println!("Selecting Reset out files from {} \n", dir.display());
+
+        for entry in try!(fs::read_dir(dir)) {
+            let this_entry = try!(entry);
+            let this_entry_path = &this_entry.path();
+            if fs::metadata( this_entry_path ).unwrap().is_dir() {
+                // cb(this_entry);
+//                try!(visit_dirs(this_entry_path, cb));
+            } else {
+                cb(this_entry);
+            }
+        }
+    }
+    Ok(())
+}
 
 
 // I need a functin that can return a sequence of paths to all thee laves,
 // copied from https://doc.rust-lang.org/std/fs/fn.read_dir.html and modified
 // <FerrousOxide> so in cb : &mut F where F: FnMut(DirEntry) cb is a reference to a mutable ( closure that can change the args it captures, and takes a DirEntry as the arg ) ?
 // <mbrubeck> FerrousOxide: Yes, though to get picky about terminology, the captured variables are not "arguments" -- they are sometimes called "upvars" (since they come from a scope "above" the closure's body)
+
 fn visit_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(DirEntry) {
     if fs::metadata( dir ).unwrap().is_dir() {
+        println!("\n Testing Reset out files from sub dirs of : {} \n", dir.display());
+
         for entry in try!(fs::read_dir(dir)) {
             let this_entry = try!(entry);
             if fs::metadata( &this_entry.path() ).unwrap().is_dir() {
                 let this_entry_path = &this_entry.path();
-                cb(this_entry);
-                try!(visit_dirs(this_entry_path, cb));
+                // cb(this_entry);
+                try!(process_tail_dirs(this_entry_path, cb));
             } else {
-                cb(this_entry);
+                // cb(this_entry);
             }
         }
     }
@@ -195,7 +220,8 @@ fn main() {
     let diff_pixels = absolute_difference_of_IDP_Imges( lhs, rhs ).expect( "abs diff failed ");
     let bad_opens = count_bad_opens( 0.3f32, &diff_pixels );
     print!(" number of bad opens for {:?} = {:?}", inpfile, bad_opens );
-    let input_dir = Path::new( r#"\\netapp\data\projects\TQV_S1\L1_bond\test\Bondable\150707"# );
+    //let input_dir = Path::new( r#"\\netapp\data\projects\TQV_S1\L1_bond\test\Bondable\150707"# );
+    let input_dir = Path::new( r#"test"# );
     
     let mut files = Vec::with_capacity(100);
     visit_dirs(input_dir, &mut |entry| vd_action( entry, &mut files ) ).unwrap();
