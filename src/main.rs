@@ -34,11 +34,10 @@ use decoder::{
 };
 
 fn make_test_idp( input_path: &Path) {
-    println!("This shold create a test IDP file!");
-    // let inpfile = r#"dsr_test_f32.idp"#;
+    println!("This should create a test IDP file!");
     let f = match File::create( input_path ) {
         Ok( file ) => file,
-        Err( msg ) => { println!("{}", msg); panic!( "room" ); }
+        Err( msg ) => { println!("{}", msg); panic!( fmt!("Panic! unable to create file at : {:?}", input_path ) ); }
     };
 
     let w = BufWriter::new( &f );
@@ -63,7 +62,7 @@ fn make_test_idp( input_path: &Path) {
 
 fn is_dead_band( i: usize, width: usize, height: usize ) -> Option<bool> {
     if ! ( 1864 == width && 1632 == height ) {
-        return None; // aslo check for i being in bounds
+        return None; // also check for i being in bounds
     } else {
         let row = i / width;
         let col = i % width;
@@ -150,64 +149,71 @@ fn count_bad_opens( threshold: f32,  ps: &Vec<Pixel> ) -> u64 {
     count
 }
 
-
-
-
-fn vd_action(  this_entry: DirEntry, files: &mut Vec<DirEntry> ) {
-    
-    if fs::metadata( &this_entry.path() ).unwrap().is_dir() {
-        println!( " is a dir: ignoring it {:?}\\",this_entry.path()  );
-    } else {
-        let this_entry_path = &this_entry.path();
-        let is_reset_file = this_entry_path.to_str().unwrap().contains("PNReset");
-        if is_reset_file {
-            files.push( this_entry );
-        }
-    }
+// ENH: instead of a vector of four,
+// make two two-tuples to calculate their absolute difference
+fn vd_action(  des : Vec<DirEntry>, files: &mut Vec< Vec<DirEntry> > ) {
+    files.push( des );
 }
 
-fn process_tail_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(DirEntry) {
+
+// reduced to exactly two levels of dir. 
+// user specifies top level, each child dir of this has all the .idp files 
+// we pick only the four with PNReset in their name.
+// 
+
+fn process_tail_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(Vec<DirEntry>) {
     if fs::metadata( dir ).unwrap().is_dir() {
         println!("Selecting Reset out files from {} \n", dir.display());
 
-        for entry in try!(fs::read_dir(dir)) {
-            let this_entry = try!(entry);
-            let this_entry_path = &this_entry.path();
-            if fs::metadata( this_entry_path ).unwrap().is_dir() {
-                // cb(this_entry);
-//                try!(visit_dirs(this_entry_path, cb));
-            } else {
-                cb(this_entry);
-            }
-        }
+        let entries = try!(fs::read_dir(dir)); // Result<ReadDir>
+        // from https://doc.rust-lang.org/std/fs/struct.ReadDir.html
+        // impl Iterator for ReadDir
+        // type Item = Result<DirEntry>
+        // https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.filter_map
+
+        // fn filter_map<B, F>(self, f: F) -> FilterMap<Self, F> 
+        // where F: FnMut(Self::Item) -> Option<B>
+
+        let reset_entries = entries.filter_map( | entry | { // the type of entry is Result<DirEntry>
+                 let this_entry = entry.unwrap();           // unwrapping it will get us the wrapped DirEntry. But on Err it will panic
+                 // try!(entry); // This will unwrap from Result but will exit the lambda on Err
+                 let this_entry_path = &this_entry.path();
+                 if !fs::metadata( this_entry_path ).unwrap().is_dir() && this_entry_path.to_str().unwrap().contains("PNReset") {
+                     Some (this_entry )
+                 } else {
+                         None
+                 }
+             });
+        let process_these = reset_entries.collect::< Vec< DirEntry> >();
+        cb( process_these );
     }
     Ok(())
 }
 
 
-// I need a functin that can return a sequence of paths to all thee laves,
-// copied from https://doc.rust-lang.org/std/fs/fn.read_dir.html and modified
+// this function enables recursively walking down/ visiting a directory tree.
+// But we only need to go two levels deep.
+// based on the example at https://doc.rust-lang.org/std/fs/fn.read_dir.html
 // <FerrousOxide> so in cb : &mut F where F: FnMut(DirEntry) cb is a reference to a mutable ( closure that can change the args it captures, and takes a DirEntry as the arg ) ?
-// <mbrubeck> FerrousOxide: Yes, though to get picky about terminology, the captured variables are not "arguments" -- they are sometimes called "upvars" (since they come from a scope "above" the closure's body)
+// <mbrubeck> FerrousOxide: Yes, though to get picky about terminology, the captured variables are not "arguments" 
+// -- they are sometimes called "upvars" (since they come from a scope "above" the closure's body)
 
-fn visit_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(DirEntry) {
+fn walk_test_dir<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(Vec<DirEntry>) {
     if fs::metadata( dir ).unwrap().is_dir() {
         println!("\n Testing Reset out files from sub dirs of : {} \n", dir.display());
 
         for entry in try!(fs::read_dir(dir)) {
             let this_entry = try!(entry);
-            if fs::metadata( &this_entry.path() ).unwrap().is_dir() {
-                let this_entry_path = &this_entry.path();
-                // cb(this_entry);
+            let this_entry_path = &this_entry.path();
+            if fs::metadata( this_entry_path ).unwrap().is_dir() {
                 try!(process_tail_dirs(this_entry_path, cb));
-            } else {
-                // cb(this_entry);
-            }
+            } 
         }
     }
     Ok(())
 }
 
+// ENH get tge test_dir and threshold as cmdline args
 
 fn main() {
     let inpfile = Path::new( r#"dsr_test_f32.idp"# );
@@ -223,13 +229,13 @@ fn main() {
     //let input_dir = Path::new( r#"\\netapp\data\projects\TQV_S1\L1_bond\test\Bondable\150707"# );
     let input_dir = Path::new( r#"test"# );
     
-    let mut files = Vec::with_capacity(100);
-    visit_dirs(input_dir, &mut |entry| vd_action( entry, &mut files ) ).unwrap();
-    for file in files {
-//        if fs::metadata( file.path() ).unwrap().is_dir() {
-//            println!("{}\\ \n", file.path().display());
-//        }
-        println!("{} \n", file.path().display());
+    let mut file_sets = Vec::with_capacity(10);
+    walk_test_dir(input_dir, &mut | entries | vd_action( entries, &mut file_sets ) ).unwrap();
+    for file_set in file_sets {
+        println!( " A new set starts : " );
+        for file in &file_set { 
+            println!("{} \n", file.path().display());
+        }
     }
 
 }
