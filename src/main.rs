@@ -2,7 +2,7 @@ extern crate byteorder;
 use std::io;
 use std::io::{BufReader, BufWriter};
 use std::fs::{File,DirEntry};
-use std::path::Path;
+use std::path::{Path,PathBuf};
 use std::option::Option;
 mod stream;
 mod image;
@@ -125,15 +125,15 @@ fn read_test_idp( input_path: &Path) -> ImageResult<Vec<Pixel> > {
     Ok( pixels )
 }
 #[allow(non_snake_case)]
-fn absolute_difference_of_IDP_Imges( lhs: &Path, rhs: &Path ) -> Option<Vec<Pixel> >{
+fn absolute_difference_of_IDP_Imges( lhs: &PathBuf, rhs: &PathBuf ) -> Option<Vec<Pixel> >{
     let lhs_pixels = read_test_idp( lhs ).unwrap();
     let rhs_pixels = read_test_idp( rhs ).unwrap();
     // make sure they are of the same dimensions etc..
     let pairs = lhs_pixels.iter().zip( rhs_pixels.iter());
-    let diffs:Vec<Pixel> = pairs.map( | (l , r) | {
-        match l.valid {
+    let diffs:Vec<Pixel> = pairs.map( | (left , right ) | {
+        match left.valid {
             BadType::DeadBand => Pixel{ value : 999f32, valid: BadType::Unknown  },
-            _ => Pixel{ value : { let x = l.value - r.value; x.abs() }, valid: BadType::Unknown  }
+            _ => Pixel{ value : { let x = left.value - right.value; x.abs() }, valid: BadType::Unknown  }
         }
     }).collect();
     Some( diffs )
@@ -213,6 +213,46 @@ fn walk_test_dir<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(Vec
     Ok(())
 }
 
+fn to_diff_pair( file_set : Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ) {
+
+    let open_test_files = &file_set.iter().filter_map( | this_entry | {
+        let this_entry_path = this_entry.path();
+         if this_entry_path.to_str().unwrap().contains("C1717") 
+         || this_entry_path.to_str().unwrap().contains("C2525") {
+             Some (this_entry )
+         } else {
+                 None
+         }
+    } ).collect::<Vec<&DirEntry>>();
+    
+    let open_diff_pixels =
+    { 
+        let lhs = open_test_files.iter().next().unwrap().path();
+        let rhs = open_test_files.iter().next().unwrap().path(); 
+        let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "abs diff failed ");
+        open_diff_pix
+    };
+    let short_test_files = &file_set.iter().filter_map( | this_entry | {
+        let this_entry_path = this_entry.path();
+         if this_entry_path.to_str().unwrap().contains("C1725") 
+         || this_entry_path.to_str().unwrap().contains("C2517") {
+             Some (this_entry )
+         } else {
+                 None
+         }
+    } ).collect::<Vec<&DirEntry>>();
+    
+    let short_diff_pixels =
+    { 
+        let lhs = short_test_files.iter().next().unwrap().path();
+        let rhs = short_test_files.iter().next().unwrap().path(); 
+        let short_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "abs diff failed ");
+        short_diff_pix
+    };
+    
+    ( open_diff_pixels, short_diff_pixels );
+}
+
 // ENH get tge test_dir and threshold as cmdline args
 
 fn main() {
@@ -220,10 +260,10 @@ fn main() {
     make_test_idp( inpfile );
     // let read_input_file = Path::new( r#"dsr_test_f32.idp"# );
     // let pixels = read_test_idp( inpfile ).unwrap();
-    let lhs = Path::new( r#"L_W_X-32768_Y-32768_D15_C1717_PNResetOut_O3_BDx3_T150707131459.IDP"#);
-    let rhs = Path::new( r#"L_W_X-32768_Y-32768_D15_C2525_PNResetOut_O3_BDx3_T150707131459.IDP"#);
+    let lhs = PathBuf::from( r#"L_W_X-32768_Y-32768_D15_C1717_PNResetOut_O3_BDx3_T150707131459.IDP"#);
+    let rhs = PathBuf::from( r#"L_W_X-32768_Y-32768_D15_C2525_PNResetOut_O3_BDx3_T150707131459.IDP"#);
 
-    let diff_pixels = absolute_difference_of_IDP_Imges( lhs, rhs ).expect( "abs diff failed ");
+    let diff_pixels = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "abs diff failed ");
     let bad_opens = count_bad_opens( 0.3f32, &diff_pixels );
     print!(" number of bad opens for {:?} = {:?}", inpfile, bad_opens );
     //let input_dir = Path::new( r#"\\netapp\data\projects\TQV_S1\L1_bond\test\Bondable\150707"# );
