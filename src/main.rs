@@ -227,9 +227,12 @@ fn to_diff_pair( file_set : Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option<Vec
     
     let open_diff_pixels =
     { 
-        let lhs = open_test_files.iter().next().unwrap().path();
-        let rhs = open_test_files.iter().next().unwrap().path(); 
-        let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "abs diff failed ");
+        let mut oit = open_test_files.iter();
+        let lhs = oit.next().unwrap().path();
+        let rhs = oit.next().unwrap().path(); 
+        let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "open abs diff failed ");
+        let bad_opens = count_bad_opens( 0.3f32, &open_diff_pix );
+        print!(" number of bad opens for 1717 - 2525 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
         open_diff_pix
     };
     let short_test_files = &file_set.iter().filter_map( | this_entry | {
@@ -244,13 +247,16 @@ fn to_diff_pair( file_set : Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option<Vec
     
     let short_diff_pixels =
     { 
-        let lhs = short_test_files.iter().next().unwrap().path();
-        let rhs = short_test_files.iter().next().unwrap().path(); 
-        let short_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "abs diff failed ");
+        let mut sit = short_test_files.iter();
+        let lhs = sit.next().unwrap().path();
+        let rhs = sit.next().unwrap().path(); 
+        let short_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "short abs diff failed ");
+        let bad_opens = count_bad_opens( 0.3f32, &short_diff_pix );
+        print!(" number of bad opens for 25117 - 1725 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
         short_diff_pix
     };
     
-    ( open_diff_pixels, short_diff_pixels );
+    ( Some( open_diff_pixels ) , Some( short_diff_pixels ) )
 }
 
 // ENH get tge test_dir and threshold as cmdline args
@@ -266,16 +272,20 @@ fn main() {
     let diff_pixels = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "abs diff failed ");
     let bad_opens = count_bad_opens( 0.3f32, &diff_pixels );
     print!(" number of bad opens for {:?} = {:?}", inpfile, bad_opens );
-    //let input_dir = Path::new( r#"\\netapp\data\projects\TQV_S1\L1_bond\test\Bondable\150707"# );
+    // let input_dir = Path::new( r#"\\netapp\data\projects\TQV_S1\L1_bond\test\Bondable\150707"# );
     let input_dir = Path::new( r#"test"# );
     
     let mut file_sets = Vec::with_capacity(10);
     walk_test_dir(input_dir, &mut | entries | vd_action( entries, &mut file_sets ) ).unwrap();
     for file_set in file_sets {
         println!( " A new set starts : " );
-        for file in &file_set { 
-            println!("{} \n", file.path().display());
-        }
+        
+        to_diff_pair( file_set );
+        
+//        for file in &file_set { 
+//            println!("{} \n", file.path().display());
+//        }
     }
+    println!( " \n\n DONE " );
 
 }
