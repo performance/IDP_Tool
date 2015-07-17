@@ -37,7 +37,7 @@ fn make_test_idp( input_path: &Path) {
     println!("This should create a test IDP file!");
     let f = match File::create( input_path ) {
         Ok( file ) => file,
-        Err( msg ) => { println!("{}", msg); panic!( fmt!("Panic! unable to create file at : {:?}", input_path ) ); }
+        Err( msg ) => { println!("{}", msg); panic!( format!("Panic! unable to create file at : {:?}", input_path ) ); }
     };
 
     let w = BufWriter::new( &f );
