@@ -192,21 +192,21 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
             }
         }
     }
-    println!("half height = {:?}", ( height / 2 ) );
-    for r in &bad_pix_in_col {
-        print!("{:?}, ", r );
-    }
+    // println!("half height = {:?}", ( height / 2 ) );
+    // for r in &bad_pix_in_col {
+    //     print!("{:?}, ", r );
+    // }
 
-    println!("\nhalf width = {:?}", ( width / 2 ) );
-    for c in &bad_pix_in_row { 
-        print!("{:?}, ", c );
-    }
+    // println!("\nhalf width = {:?}", ( width / 2 ) );
+    // for c in &bad_pix_in_row { 
+    //     print!("{:?}, ", c );
+    // }
     // println!( "at line: {:?} bad_pix_in_col = \n{:?}, \nbad_pix_in_row = \n{:?}  ", line!(), &bad_pix_in_col, &bad_pix_in_row );
     
     let bad_cols : Vec<bool> = bad_pix_in_col.iter().map( |col_count| *col_count > ( height / 2 ) ).collect();
     let bad_rows : Vec<bool> = bad_pix_in_row.iter().map( |row_count| *row_count > ( width  / 2 ) ).collect();
     
-    println!( "\nat line: {:?} bad_cols = \n{:?}, \nbad_rows = \n{:?}", line!(), &bad_cols, &bad_rows );
+    // println!( "\nat line: {:?} bad_cols = \n{:?}, \nbad_rows = \n{:?}", line!(), &bad_cols, &bad_rows );
     
     let mut mask_pixels : Vec<Pixel> = Vec::with_capacity(total_pix);
     // println!( "at line: {:?} ", line!() );
@@ -244,18 +244,22 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
             mask_pixels.push( mask_pix );
         }
     }
+    let num_total = num_bad_col + num_bad_row + num_bad_both + num_dead_band + num_unknown;
+
     println!( "at line: {:?} : \n \
         num_bad_col   = {:?} \n \
         num_bad_row   = {:?} \n \
         num_bad_both  = {:?} \n \
         num_dead_band = {:?} \n \
-        num_unknown   = {:?} \n ",
+        num_unknown   = {:?} \n \
+        num_total     = {:?} \n" , 
            line!(), 
            num_bad_col,
            num_bad_row,
            num_bad_both,
            num_dead_band,
-           num_unknown
+           num_unknown,
+           num_total
        );
     Some ( mask_pixels )
 }
