@@ -1,0 +1,125 @@
+
+ Testing Reset out files from sub dirs of : test 
+
+Selecting Reset out files from test\x11y11 
+
+Selecting Reset out files from test\x11y12 
+
+Selecting Reset out files from test\x12y5 
+
+Selecting Reset out files from test\x15y11 
+
+Selecting Reset out files from test\x15y12 
+
+Selecting Reset out files from test\x8y11 
+
+Selecting Reset out files from test\x8y12 
+
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x11y11\L_W_X-32768_Y-32768_D35_C1717_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707111948.IDP",
+- "test\x11y11\L_W_X-32768_Y-32768_D35_C2525_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707111948.IDP" ) = 27073
+at line: 121 : 
+ num_bad_col   = 0 
+ num_bad_row   = 0 
+ num_bad_both  = 0 
+ num_dead_band = 378624 
+ num_unknown   = 2663424 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x11y11\L_W_X-32768_Y-32768_D35_C1725_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707111948.IDP",
+- "test\x11y11\L_W_X-32768_Y-32768_D35_C2517_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707111948.IDP" ) = 2636347
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x11y12\L_W_X-32768_Y-32768_D36_C1717_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707113521.IDP",
+- "test\x11y12\L_W_X-32768_Y-32768_D36_C2525_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707113521.IDP" ) = 7905
+at line: 121 : 
+ num_bad_col   = 0 
+ num_bad_row   = 0 
+ num_bad_both  = 0 
+ num_dead_band = 378624 
+ num_unknown   = 2663424 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x11y12\L_W_X-32768_Y-32768_D36_C1725_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707113521.IDP",
+- "test\x11y12\L_W_X-32768_Y-32768_D36_C2517_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707113521.IDP" ) = 634722
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x12y5\L_W_X-32768_Y-32768_D29_C1717_PNResetOut_O3_BDx3_T150707140729.IDP",
+- "test\x12y5\L_W_X-32768_Y-32768_D29_C2525_PNResetOut_O3_BDx3_T150707140729.IDP" ) = 1211188
+at line: 121 : 
+ num_bad_col   = 38262 
+ num_bad_row   = 1313662 
+ num_bad_both  = 30282 
+ num_dead_band = 206620 
+ num_unknown   = 1453222 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x12y5\L_W_X-32768_Y-32768_D29_C1725_PNResetOut_O3_BDx3_T150707140729.IDP",
+- "test\x12y5\L_W_X-32768_Y-32768_D29_C2517_PNResetOut_O3_BDx3_T150707140729.IDP" ) = 336813
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x15y11\L_W_X-32768_Y-32768_D14_C1717_PNResetOut_O3_BDx3_T150707125750.IDP",
+- "test\x15y11\L_W_X-32768_Y-32768_D14_C2525_PNResetOut_O3_BDx3_T150707125750.IDP" ) = 65453
+at line: 121 : 
+ num_bad_col   = 32200 
+ num_bad_row   = 40568 
+ num_bad_both  = 440 
+ num_dead_band = 369576 
+ num_unknown   = 2599264 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x15y11\L_W_X-32768_Y-32768_D14_C1725_PNResetOut_O3_BDx3_T150707125750.IDP",
+- "test\x15y11\L_W_X-32768_Y-32768_D14_C2517_PNResetOut_O3_BDx3_T150707125750.IDP" ) = 2180586
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x15y12\L_W_X-32768_Y-32768_D15_C1717_PNResetOut_O3_BDx3_T150707131459.IDP",
+- "test\x15y12\L_W_X-32768_Y-32768_D15_C2525_PNResetOut_O3_BDx3_T150707131459.IDP" ) = 89543
+at line: 121 : 
+ num_bad_col   = 33747 
+ num_bad_row   = 46075 
+ num_bad_both  = 525 
+ num_dead_band = 368648 
+ num_unknown   = 2593053 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x15y12\L_W_X-32768_Y-32768_D15_C1725_PNResetOut_O3_BDx3_T150707131459.IDP",
+- "test\x15y12\L_W_X-32768_Y-32768_D15_C2517_PNResetOut_O3_BDx3_T150707131459.IDP" ) = 2155057
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x8y11\L_W_X-32768_Y-32768_D25_C1717_PNResetOut_O3_BDx3_T150707135036.IDP",
+- "test\x8y11\L_W_X-32768_Y-32768_D25_C2525_PNResetOut_O3_BDx3_T150707135036.IDP" ) = 82309
+at line: 121 : 
+ num_bad_col   = 38592 
+ num_bad_row   = 44160 
+ num_bad_both  = 576 
+ num_dead_band = 368416 
+ num_unknown   = 2590304 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x8y11\L_W_X-32768_Y-32768_D25_C1725_PNResetOut_O3_BDx3_T150707135036.IDP",
+- "test\x8y11\L_W_X-32768_Y-32768_D25_C2517_PNResetOut_O3_BDx3_T150707135036.IDP" ) = 1707030
+ A new set starts : 
+ number of bad opens for 1717 - 2525 
+( "test\x8y12\L_W_X-32768_Y-32768_D24_C1717_PNResetOut_O3_BDx3_T150707133312.IDP",
+- "test\x8y12\L_W_X-32768_Y-32768_D24_C2525_PNResetOut_O3_BDx3_T150707133312.IDP" ) = 76656
+at line: 121 : 
+ num_bad_col   = 33789 
+ num_bad_row   = 42389 
+ num_bad_both  = 483 
+ num_dead_band = 369112 
+ num_unknown   = 2596275 
+ num_total     = 3042048 
+
+ number of bad shorts for 25117 - 1725 
+( "test\x8y12\L_W_X-32768_Y-32768_D24_C1725_PNResetOut_O3_BDx3_T150707133312.IDP",
+- "test\x8y12\L_W_X-32768_Y-32768_D24_C2517_PNResetOut_O3_BDx3_T150707133312.IDP" ) = 2103787
+ 
+
+ DONE 
