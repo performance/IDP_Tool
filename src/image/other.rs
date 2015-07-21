@@ -24,9 +24,12 @@ pub enum DecodingBuffer<'a> {
 #[derive(Copy, PartialEq, Eq, Debug, Clone)]
 pub enum BadType {
     DeadBand,
-    Open,
-    Short_Level1,
-    Short_Level2,
+    OpenBad,
+    OpenBadRow,
+    OpenBadCol,
+    OpenBadBoth,
+    // Short_Level1,
+    // Short_Level2,
     Unknown
 }
 
