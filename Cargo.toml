@@ -10,3 +10,4 @@ name = "idp_tool"
 
 [dependencies]
 byteorder = "*"
+simple_stats = "0.0.4"

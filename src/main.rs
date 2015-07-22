@@ -1,4 +1,5 @@
 extern crate byteorder;
+extern crate simple_stats;
 
 mod stream;
 mod image;
@@ -27,5 +28,4 @@ fn main() {
         to_diff_pair( file_set );
     }
     println!( " \n\n DONE " );
-
-}
+} 
