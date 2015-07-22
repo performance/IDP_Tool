@@ -15,11 +15,11 @@ Selecting Reset out files from test\x8y11
 
 Selecting Reset out files from test\x8y12 
 
- A new set starts : 
+ Stats for set number : 0
  number of bad opens for 1717 - 2525 
 ( "test\x11y11\L_W_X-32768_Y-32768_D35_C1717_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707111948.IDP",
 - "test\x11y11\L_W_X-32768_Y-32768_D35_C2525_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707111948.IDP" ) = 27073
-at line: 133 : 
+at line: 137 : 
  num_bad_col   = 0 
  num_bad_row   = 0 
  num_bad_both  = 0 
@@ -27,14 +27,14 @@ at line: 133 :
  num_unknown   = 2663424 
  num_total     = 3042048 
 
- number of bad shorts for 25117 - 1725 
+ number of bad shorts for 2517 - 1725 
 ( "test\x11y11\L_W_X-32768_Y-32768_D35_C1725_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707111948.IDP",
 - "test\x11y11\L_W_X-32768_Y-32768_D35_C2517_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707111948.IDP" ) = 1318053 <==> Threshold = 0.3584615
- A new set starts : 
+ Stats for set number : 1
  number of bad opens for 1717 - 2525 
 ( "test\x11y12\L_W_X-32768_Y-32768_D36_C1717_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707113521.IDP",
 - "test\x11y12\L_W_X-32768_Y-32768_D36_C2525_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707113521.IDP" ) = 7905
-at line: 133 : 
+at line: 137 : 
  num_bad_col   = 0 
  num_bad_row   = 0 
  num_bad_both  = 0 
@@ -42,14 +42,14 @@ at line: 133 :
  num_unknown   = 2663424 
  num_total     = 3042048 
 
- number of bad shorts for 25117 - 1725 
+ number of bad shorts for 2517 - 1725 
 ( "test\x11y12\L_W_X-32768_Y-32768_D36_C1725_PNResetOut_VT2.4999E+0_VB2.4999E+0_O3_BDx3_T150707113521.IDP",
 - "test\x11y12\L_W_X-32768_Y-32768_D36_C2517_PNResetOut_VT1.7001E+0_VB1.7001E+0_O3_BDx3_T150707113521.IDP" ) = 1326821 <==> Threshold = 0.5081767
- A new set starts : 
+ Stats for set number : 2
  number of bad opens for 1717 - 2525 
 ( "test\x12y5\L_W_X-32768_Y-32768_D29_C1717_PNResetOut_O3_BDx3_T150707140729.IDP",
 - "test\x12y5\L_W_X-32768_Y-32768_D29_C2525_PNResetOut_O3_BDx3_T150707140729.IDP" ) = 1211188
-at line: 133 : 
+at line: 137 : 
  num_bad_col   = 38262 
  num_bad_row   = 1313662 
  num_bad_both  = 30282 
@@ -57,3 +57,5 @@ at line: 133 :
  num_unknown   = 1453222 
  num_total     = 3042048 
 
+
+thread '<main>' has overflowed its stack

@@ -109,11 +109,11 @@ fn read_test_idp( input_path: &Path) -> ImageResult<Vec<Pixel> > {
     Ok( pixels )
 }
 
-// ENH: instead of a vector of four,
-// make two two-tuples to calculate their absolute difference
-pub fn vd_action(  des : Vec<DirEntry>, files: &mut Vec< Vec<DirEntry> > ) {
-    files.push( des );
-}
+// // ENH: instead of a vector of four,
+// // make two two-tuples to calculate their absolute difference
+// pub fn vd_action(  des : Vec<DirEntry>, files: &mut Vec< Vec<DirEntry> > ) {
+//     files.push( des );
+// }
 
 
 // reduced to exactly two levels of dir. 

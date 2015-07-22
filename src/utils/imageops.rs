@@ -41,14 +41,18 @@ fn count_bad_pixels( threshold: f32, ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> u64 {
     count
 }
 
+// TODO: this name sux, change it to median_of_unmasked_pixel_values or something better
 fn collect_unmasked_pixel_values_median ( ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> Option<f32> {
-    let mut unmasked_pixel_values : Vec<f32> = Vec::with_capacity(ps.len() ); //  this will over allocate
-    for ( m, p ) in ms.iter().zip( ps.iter() ) {
-        if m.valid == BadType::Unknown {
-            unmasked_pixel_values.push( p.value );
-        }
-    }
-    let threshold_for_shorts  = simple_stats::median( &unmasked_pixel_values );
+    // let mut unmasked_pixel_values : Vec<f32> = Vec::with_capacity(ps.len() ); //  this will over allocate
+    // for ( m, p ) in ms.iter().zip( ps.iter() ) {
+    //     if m.valid == BadType::Unknown {
+    //         unmasked_pixel_values.push( p.value );
+    //     }
+    // }
+    let threshold_for_shorts  = {
+        let unmasked_pixel_values: Vec<f32> = ms.iter().zip( ps.iter() ).filter_map( | ( m,p ) | if m.valid == BadType::Unknown { Some( p.value ) } else { None } ).collect();
+        simple_stats::median( &unmasked_pixel_values )
+    };
     Some( threshold_for_shorts )
 }
 
@@ -149,9 +153,9 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
 }
 
 
-pub fn to_diff_pair( file_set : Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ) {
+pub fn to_diff_pair( file_set : &Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ) {
 
-    let open_test_files = &file_set.iter().filter_map( | this_entry | {
+    let open_test_files = file_set.iter().filter_map( | this_entry | {
         let this_entry_path = this_entry.path();
          if this_entry_path.to_str().unwrap().contains("C1717") 
          || this_entry_path.to_str().unwrap().contains("C2525") {
@@ -189,17 +193,15 @@ pub fn to_diff_pair( file_set : Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option
         let lhs = sit.next().unwrap().path();
         let rhs = sit.next().unwrap().path(); 
         let short_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "short abs diff failed ");
-        // println!( "at line: {:?} ", line!() );
         
         let mask_for_shorts = pixels_to_mask( &marked_pixels, 1864, 1632 ).expect( " unable to create mask" );
-        // println!( "at line: {:?} ", line!() );
+        // let threshold_for_shorts  = 0.5f32;         
+        // stack over flow!! using the constant above does not cause the SO
         let threshold_for_shorts  = collect_unmasked_pixel_values_median( &mask_for_shorts, &short_diff_pix ).expect(" unable to collect unmasked pixels");
-        // let eligible_short_pixel_values = eligible_short_pixels.iter().map( |p | p.value ).collect::<Vec<f32>>(); 
-        // let threshold_for_shorts  = simple_stats::median( &eligible_short_pixel_values );
-
+        
         let bad_shorts = count_bad_pixels( threshold_for_shorts, &mask_for_shorts, &short_diff_pix );
         // println!( "at line: {:?} ", line!() );
-        print!(" number of bad shorts for 25117 - 1725 \n( {:?},\n- {:?} ) = {:?} <==> Threshold = {:?}\n", lhs, rhs, bad_shorts, threshold_for_shorts );
+        print!(" number of bad shorts for 2517 - 1725 \n( {:?},\n- {:?} ) = {:?} <==> Threshold = {:?}\n", lhs, rhs, bad_shorts, threshold_for_shorts );
         short_diff_pix
     };
     

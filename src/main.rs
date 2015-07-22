@@ -7,6 +7,7 @@ mod decoder;
 mod utils;
 
 use std::path::Path;
+use std::iter::Iterator;
 
 use utils::imageops::{
     to_diff_pair
@@ -14,7 +15,6 @@ use utils::imageops::{
 
 use utils::file::{
     walk_test_dir,
-    vd_action
 };
 
 
@@ -22,9 +22,10 @@ use utils::file::{
 fn main() {
     let input_dir = Path::new( r#"test"# );
     let mut file_sets = Vec::with_capacity(10);
-    walk_test_dir(input_dir, &mut | entries | vd_action( entries, &mut file_sets ) ).unwrap();
-    for file_set in file_sets {
-        println!( " A new set starts : " );
+    walk_test_dir(input_dir, &mut | entries | file_sets.push( entries ) ).unwrap();
+
+    for ( i, file_set ) in file_sets.iter().enumerate() {
+        println!( " Stats for set number : {:?}", i );
         to_diff_pair( file_set );
     }
     println!( " \n\n DONE " );
