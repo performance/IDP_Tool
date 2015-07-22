@@ -1,7 +1,5 @@
-extern crate simple_stats;
-
 use std::fs::{DirEntry};
-
+use std::cmp::Ordering;
 use image::other::{
     BadType,
     Pixel
@@ -41,23 +39,28 @@ fn count_bad_pixels( threshold: f32, ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> u64 {
     count
 }
 
-// TODO: this name sux, change it to median_of_unmasked_pixel_values or something better
-fn collect_unmasked_pixel_values_median ( ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> Option<f32> {
-    // let mut unmasked_pixel_values : Vec<f32> = Vec::with_capacity(ps.len() ); //  this will over allocate
-    // for ( m, p ) in ms.iter().zip( ps.iter() ) {
-    //     if m.valid == BadType::Unknown {
-    //         unmasked_pixel_values.push( p.value );
-    //     }
-    // }
+fn median_of_unmasked_pixel_values ( ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> Option<f32> {
+
     let threshold_for_shorts  = {
-        let unmasked_pixel_values: Vec<f32> = ms.iter().zip( ps.iter() ).filter_map( 
+        let mut unmasked_pixel_values: Vec<f32> = ms.iter().zip( ps.iter() ).filter_map( 
             | ( m,p ) | if m.valid == BadType::Unknown { Some( p.value ) } else { None } 
         ).collect();
-        simple_stats::median( &unmasked_pixel_values )
+        let num_elems = unmasked_pixel_values.len();
+        let mid_elem = num_elems / 2;
+        let mid_elem_prev = mid_elem - 1;
+        unmasked_pixel_values.sort_by(| a, b | if a < b { Ordering::Less } else if  a > b { Ordering::Greater } else { Ordering::Equal } );
+        if ( num_elems % 2 ) == 1  { 
+           ( unmasked_pixel_values[ mid_elem ] + unmasked_pixel_values[ mid_elem_prev ] ) / 2.0
+        } else
+        {
+            unmasked_pixel_values[ mid_elem ]
+        }
     };
     Some( threshold_for_shorts )
 }
 
+
+// masks out all the columns and rows with > 50% bad pixels in them
 fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<Vec<Pixel> >{
     let total_pix = ps.len();
     // assert that this is equal to width times height
@@ -82,23 +85,14 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
             }
         }
     }
-    // println!("half height = {:?}", ( height / 2 ) );
-    // for r in &bad_pix_in_col {
-    //     print!("{:?}, ", r );
-    // }
 
-    // println!("\nhalf width = {:?}", ( width / 2 ) );
-    // for c in &bad_pix_in_row { 
-    //     print!("{:?}, ", c );
-    // }
-    // println!( "at line: {:?} bad_pix_in_col = \n{:?}, \nbad_pix_in_row = \n{:?}  ", line!(), &bad_pix_in_col, &bad_pix_in_row );
-    
     let bad_cols : Vec<bool> = bad_pix_in_col.iter().map( |col_count| *col_count > ( height / 2 ) ).collect();
     let bad_rows : Vec<bool> = bad_pix_in_row.iter().map( |row_count| *row_count > ( width  / 2 ) ).collect();
+
+    let number_of_bad_columns = bad_cols.iter().fold( 0, |sum, x | sum + if *x { 1 } else {0 } );
+    let number_of_bad_rows    = bad_rows.iter().filter( | &x | *x ).collect::<Vec<_>>().len(); // | fold( 0, |sum, x | sum + if *x { 1 } else {0 } );
     
-    // println!( "\nat line: {:?} bad_cols = \n{:?}, \nbad_rows = \n{:?}", line!(), &bad_cols, &bad_rows );
-    
-    let mut mask_pixels : Vec<Pixel> = Vec::with_capacity(total_pix);
+    let mut mask_pixels : Vec<Pixel> = Vec::with_capacity(total_pix); 
     // println!( "at line: {:?} ", line!() );
     let mut pit = ps.iter();
     // println!( "at line: {:?} ", line!() );
@@ -136,14 +130,17 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
     }
     let num_total = num_bad_col + num_bad_row + num_bad_both + num_dead_band + num_unknown;
 
-    println!( "at line: {:?} : \n \
-        num_bad_col   = {:?} \n \
-        num_bad_row   = {:?} \n \
-        num_bad_both  = {:?} \n \
+    println!( " \
+    	number of bad columns             = {:?} \n \
+    	number of bad rows                = {:?} \n \
+        number of pixels in bad columns   = {:?} \n \
+        number of pixels in bad rows      = {:?} \n \
+        number o  pixels in bad both      = {:?} \n \
         num_dead_band = {:?} \n \
         num_unknown   = {:?} \n \
-        num_total     = {:?} \n" , 
-           line!(), 
+        num_total     = {:?} \n" ,
+           number_of_bad_columns,
+           number_of_bad_rows,
            num_bad_col,
            num_bad_row,
            num_bad_both,
@@ -199,7 +196,7 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Optio
         let mask_for_shorts = pixels_to_mask( &marked_pixels, 1864, 1632 ).expect( " unable to create mask" );
         // let threshold_for_shorts  = 0.5f32;         
         // stack over flow!! using the constant above does not cause the SO
-        let threshold_for_shorts  = collect_unmasked_pixel_values_median( &mask_for_shorts, &short_diff_pix ).expect(" unable to collect unmasked pixels");
+        let threshold_for_shorts  = median_of_unmasked_pixel_values( &mask_for_shorts, &short_diff_pix ).expect(" unable to collect unmasked pixels");
         
         let bad_shorts = count_bad_pixels( threshold_for_shorts, &mask_for_shorts, &short_diff_pix );
         // println!( "at line: {:?} ", line!() );

@@ -1,5 +1,4 @@
 extern crate byteorder;
-extern crate simple_stats;
 
 mod stream;
 mod image;
@@ -25,7 +24,8 @@ fn main() {
     walk_test_dir(input_dir, &mut | entries | file_sets.push( entries ) ).unwrap();
 
     for ( i, file_set ) in file_sets.iter().enumerate() {
-        println!( " Stats for set number : {:?}", i );
+        println!( "--------------------- ------------------------- ------------------------------ ");
+        println!( "\n\n Stats for set number : {:?}", i );
         to_diff_pair( file_set );
     }
     println!( " \n\n DONE " );
