@@ -50,7 +50,9 @@ fn collect_unmasked_pixel_values_median ( ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> 
     //     }
     // }
     let threshold_for_shorts  = {
-        let unmasked_pixel_values: Vec<f32> = ms.iter().zip( ps.iter() ).filter_map( | ( m,p ) | if m.valid == BadType::Unknown { Some( p.value ) } else { None } ).collect();
+        let unmasked_pixel_values: Vec<f32> = ms.iter().zip( ps.iter() ).filter_map( 
+            | ( m,p ) | if m.valid == BadType::Unknown { Some( p.value ) } else { None } 
+        ).collect();
         simple_stats::median( &unmasked_pixel_values )
     };
     Some( threshold_for_shorts )
