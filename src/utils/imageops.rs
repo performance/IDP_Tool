@@ -61,7 +61,8 @@ fn median_of_unmasked_pixel_values ( ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> Optio
 
 
 // masks out all the columns and rows with > 50% bad pixels in them
-fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<Vec<Pixel> >{
+// TODO: use a struct to return stuff 
+fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<( Vec<Pixel>, u64, u64, u64, u64 ) >{
     let total_pix = ps.len();
     // assert that this is equal to width times height
     
@@ -103,56 +104,57 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
     let mut num_unknown = 0u64; 
     
     for row in 0..height {
-        for col in 0..width{
-            // println!( "at line: {:?} ", line!() );
-            let mask_pix = match ( bad_cols[ col ], bad_rows[ row ] ) {
-                ( true,  true  ) => { num_bad_both += 1; Pixel{ value : 999f32, valid: BadType::OpenBadBoth } },
-                ( true,  false ) => { num_bad_col  += 1; Pixel{ value : 999f32, valid: BadType::OpenBadCol  } },
-                ( false, true  ) => { num_bad_row  += 1; Pixel{ value : 999f32, valid: BadType::OpenBadRow  } },
-                ( false, false ) => {
-                    // println!( "at line: {:?} ", line!() );
-                    let this_pix = pit.next().unwrap();
-                    let this_valid = this_pix.valid;
-                    let this_value = this_pix.value;
-                    if BadType::DeadBand == this_valid {
-                        num_dead_band += 1;
-                    }
-                    else
-                    {
-                        num_unknown += 1;
-                    }
+        for col in 0..width {
+            let this_pix = pit.next().unwrap();
+            let this_valid = this_pix.valid;
+            let this_value = this_pix.value;
+
+            let mask_pix = if BadType::DeadBand == this_valid {
+                    num_dead_band += 1;
                     Pixel{ value : this_value, valid: this_valid  }
-                },
-            };
-            // println!( "at line: {:?} ", line!() );
+                } else {
+
+                    match ( bad_cols[ col ], bad_rows[ row ] ) {
+                        ( true,  true  ) => { num_bad_both += 1; Pixel{ value : 999f32, valid: BadType::OpenBadBoth } },
+                        ( true,  false ) => { num_bad_col  += 1; Pixel{ value : 999f32, valid: BadType::OpenBadCol  } },
+                        ( false, true  ) => { num_bad_row  += 1; Pixel{ value : 999f32, valid: BadType::OpenBadRow  } },
+                        ( false, false ) => {
+                            num_unknown += 1;
+                            Pixel{ value : this_value, valid: this_valid  }
+                        },
+                    }
+                };
             mask_pixels.push( mask_pix );
         }
     }
     let num_total = num_bad_col + num_bad_row + num_bad_both + num_dead_band + num_unknown;
 
-    println!( " \
-    	number of bad columns             = {:?} \n \
-    	number of bad rows                = {:?} \n \
-        number of pixels in bad columns   = {:?} \n \
-        number of pixels in bad rows      = {:?} \n \
-        number o  pixels in bad both      = {:?} \n \
-        num_dead_band = {:?} \n \
-        num_unknown   = {:?} \n \
-        num_total     = {:?} \n" ,
-           number_of_bad_columns,
-           number_of_bad_rows,
-           num_bad_col,
-           num_bad_row,
-           num_bad_both,
-           num_dead_band,
-           num_unknown,
-           num_total
-       );
-    Some ( mask_pixels )
+    // println!( " \
+    //     number of bad columns             = {:?} \n \
+    //     number of bad rows                = {:?} \n \
+    //     number of pixels in bad columns   = {:?} \n \
+    //     number of pixels in bad rows      = {:?} \n \
+    //     number o  pixels in bad both      = {:?} \n \
+    //     num_dead_band = {:?} \n \
+    //     num_unknown   = {:?} \n \
+    //     num_total     = {:?} \n" ,
+    //        number_of_bad_columns,
+    //        number_of_bad_rows,
+    //        num_bad_col,
+    //        num_bad_row,
+    //        num_bad_both,
+    //        num_dead_band,
+    //        num_unknown,
+    //        num_total
+    //    );
+    Some ( ( mask_pixels, number_of_bad_columns as u64, number_of_bad_rows as u64, num_total, num_dead_band ) )
 }
 
 
-pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ) {
+pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> 
+    ( ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ),
+      ( u64, u64, u64, u64, f32 , u64, u64 ) 
+    ) {
 
     let open_test_files = file_set.iter().filter_map( | this_entry | {
         let this_entry_path = this_entry.path();
@@ -164,7 +166,7 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> ( Optio
          }
     } ).collect::<Vec<&DirEntry>>();
     
-    let ( open_diff_pixels, marked_pixels )=
+    let ( open_diff_pixels, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total, num_dead_band )=
     { 
         let mut oit = open_test_files.iter();
         let lhs = oit.next().unwrap().path();
@@ -172,9 +174,10 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> ( Optio
         let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "open abs diff failed ");
         let ( marked_pixels_opt, bad_opens ) = mark_open_bads ( open_threshold, &open_diff_pix );
         let marked_pixels = marked_pixels_opt.expect( "marking open bads failed for short test ");
-        // let bad_opens = count_bad_pixels( 0.3f32, &open_diff_pix, &open_diff_pix );
-        print!(" number of bad opens for 1717 - 2525 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
-        ( open_diff_pix, marked_pixels )
+        let ( mask_for_shorts, number_of_bad_columns, number_of_bad_rows, num_total, num_dead_band ) 
+                = pixels_to_mask( &marked_pixels, 1864, 1632 ).expect( " unable to create mask" );
+        // print!(" number of bad opens for 1717 - 2525 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
+        ( open_diff_pix, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total, num_dead_band )
     };
     let short_test_files = &file_set.iter().filter_map( | this_entry | {
         let this_entry_path = this_entry.path();
@@ -186,23 +189,26 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> ( Optio
          }
     } ).collect::<Vec<&DirEntry>>();
     
-    let short_diff_pixels =
+    let ( short_diff_pixels, bad_shorts, threshold_for_shorts ) =
     { 
         let mut sit = short_test_files.iter();
         let lhs = sit.next().unwrap().path();
         let rhs = sit.next().unwrap().path(); 
         let short_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "short abs diff failed ");
         
-        let mask_for_shorts = pixels_to_mask( &marked_pixels, 1864, 1632 ).expect( " unable to create mask" );
+
         // let threshold_for_shorts  = 0.5f32;         
         // stack over flow!! using the constant above does not cause the SO
         let threshold_for_shorts  = median_of_unmasked_pixel_values( &mask_for_shorts, &short_diff_pix ).expect(" unable to collect unmasked pixels");
         
         let bad_shorts = count_bad_pixels( threshold_for_shorts, &mask_for_shorts, &short_diff_pix );
         // println!( "at line: {:?} ", line!() );
-        print!(" number of bad shorts for 2517 - 1725 \n( {:?},\n- {:?} ) = {:?} <==> Threshold = {:?}\n", lhs, rhs, bad_shorts, threshold_for_shorts );
-        short_diff_pix
+        // print!(" number of bad shorts for 2517 - 1725 \n( {:?},\n- {:?} ) = {:?} <==> Threshold = {:?}\n", lhs, rhs, bad_shorts, threshold_for_shorts );
+        ( short_diff_pix, bad_shorts, threshold_for_shorts )
     };
-    
-    ( Some( open_diff_pixels ) , Some( short_diff_pixels ) )
+    (
+        ( Some( open_diff_pixels ) , Some( short_diff_pixels ) ),
+        ( bad_opens, number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts , num_total, num_dead_band )
+
+    )
 }

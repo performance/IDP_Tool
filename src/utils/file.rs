@@ -1,10 +1,11 @@
 use std::io;
-use std::io::{BufReader, BufWriter};
-
+use std::io::{BufReader, BufWriter, Error, ErrorKind};
 use std::fs;
 use std::fs::{File,DirEntry};
 
 use std::path::{Path,PathBuf};
+
+use regex::Regex;
 
 use stream::{
     ByteOrder,
@@ -123,7 +124,8 @@ fn read_test_idp( input_path: &Path) -> ImageResult<Vec<Pixel> > {
 
 fn process_tail_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(Vec<DirEntry>) {
     if fs::metadata( dir ).unwrap().is_dir() {
-        println!("Selecting Reset out files from {} \n", dir.display());
+        // println!("Selecting Reset out files from {} \n", dir.display());
+        // let xy = TODO: see if it makes sense to extract x and y here
 
         let entries = try!(fs::read_dir(dir)); // Result<ReadDir>
         // from https://doc.rust-lang.org/std/fs/struct.ReadDir.html
@@ -159,8 +161,16 @@ fn process_tail_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut
 // -- they are sometimes called "upvars" (since they come from a scope "above" the closure's body)
 
 pub fn walk_test_dir<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut(Vec<DirEntry>) {
-    if fs::metadata( dir ).unwrap().is_dir() {
-        println!("\n Testing Reset out files from sub dirs of : {} \n", dir.display());
+    let metadata = fs::metadata( dir );
+    let md = match metadata {
+        Ok( m ) => m,
+        Err( _e ) => { 
+            println!( " {:?} could not be found.  Please double check the value given to the -t parameter", dir ); 
+            return Err( Error::new(ErrorKind::Other, format!( "The given test_dir {:?} is not a directory or is not accessible", dir) ) )
+        }, 
+    };
+    if md.is_dir() {
+        // println!("\n Testing Reset out files from sub dirs of : {} \n", dir.display());
 
         for entry in try!(fs::read_dir(dir)) {
             let this_entry = try!(entry);
@@ -169,6 +179,17 @@ pub fn walk_test_dir<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut
                 try!(process_tail_dirs(this_entry_path, cb));
             } 
         }
+        Ok(())
+    } else {
+        Err( Error::new(ErrorKind::Other, format!( "The given test_dir {:?} is not a directory", dir ) ) ) 
     }
-    Ok(())
+}
+
+pub fn extract_x_y_from_name<'a>( dir : &'a PathBuf ) -> ( u32, u32 ) {
+    let path = dir; // .path();
+    let xy = path.parent().unwrap().file_name().unwrap();
+    let re = Regex::new(r"^[Xx](?P<x>\d+)[Yy](?P<y>\d+)$").unwrap();
+    let caps = re.captures( xy.to_str().unwrap() ).unwrap();
+    // for cap in caps.iter() { println!( "{:?}", cap ); }
+    ( caps.at( 1 ).unwrap().trim().parse::<u32>().ok().unwrap(), caps.at( 2 ).unwrap().trim().parse::<u32>().ok().unwrap() )
 }

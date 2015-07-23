@@ -11,3 +11,4 @@ name = "idp_tool"
 [dependencies]
 byteorder = "*"
 getopts = "0.2"
+regex = "0.1.8"

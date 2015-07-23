@@ -10,12 +10,12 @@ pub struct IDPToolOptions {
 
 
 impl IDPToolOptions {
-   // fn new() -> IDPToolOptions {
-   //     IDPToolOptions {
-   //         test_directory  : "".to_string(),
-   //         open_threshold    : 0f32,
-   //     }
-   // }
+    fn new() -> IDPToolOptions {
+        IDPToolOptions {
+            test_directory  : "".to_string(),
+            open_threshold    : 0f32,
+        }
+    }
 
     fn mnew( matches : &getopts::Matches ) -> IDPToolOptions {
         IDPToolOptions {
@@ -25,12 +25,14 @@ impl IDPToolOptions {
     }   
     pub fn make_new() -> IDPToolOptions {
        let args: Vec<String> = env::args().collect();
-       let matches = cmdline_options( &args ).expect( "" );
-       IDPToolOptions::mnew( &matches )
+       match cmdline_options( &args ) {
+           Some( matches ) => IDPToolOptions::mnew( &matches ),
+           None            => IDPToolOptions::new( ),
+       }
    }
 
     pub fn print( &self) {
-        println!("The following image options will be used: " );
+        println!("The following test options will be used: " );
         println!("test_directory : {:?}", self.test_directory );
         println!("open_threshold : {:?}", self.open_threshold );
     }
@@ -38,7 +40,7 @@ impl IDPToolOptions {
 
 
 fn print_usage(program: &str, opts: &Options) {
-    let brief = format!("Usage: {} <columns> <rows> <-f|-s|-e>", program);
+    let brief = format!("Usage: {} -t <test_dir> -o <open_threshold>", program);
     print!("{}", opts.usage(&brief));
 }
 
@@ -52,7 +54,10 @@ fn cmdline_options( _args : &Vec<String> ) -> Option< Matches > {
     let program = args[0].clone();
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => { m }
-        Err(f) => { print_usage(&program, &opts); panic!(f.to_string());  }
+        Err( _f) => { 
+            print_usage(&program, &opts); 
+            panic!( format!("Please check that the arguments are correct : {:?} ", &args ) );
+        }
     };
     
     if matches.opt_present("h") {
