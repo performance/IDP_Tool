@@ -1,3 +1,6 @@
+The following image options will be used: 
+test_directory : "test"
+open_threshold : 0.3
 
  Testing Reset out files from sub dirs of : test 
 

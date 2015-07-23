@@ -1,4 +1,6 @@
 extern crate byteorder;
+extern crate getopts;
+
 
 mod stream;
 mod image;
@@ -16,17 +18,23 @@ use utils::file::{
     walk_test_dir,
 };
 
+use utils::cmdline_options::{
+    IDPToolOptions
+};
 
-// ENH get tge test_dir and threshold as cmdline args
 fn main() {
-    let input_dir = Path::new( r#"test"# );
+    let idp_tool_options = IDPToolOptions::make_new();
+    idp_tool_options.print();
+
+
+    let input_dir = Path::new( &idp_tool_options.test_directory );
     let mut file_sets = Vec::with_capacity(10);
-    walk_test_dir(input_dir, &mut | entries | file_sets.push( entries ) ).unwrap();
+    walk_test_dir( input_dir, &mut | entries | file_sets.push( entries ) ).unwrap();
 
     for ( i, file_set ) in file_sets.iter().enumerate() {
         println!( "--------------------- ------------------------- ------------------------------ ");
         println!( "\n\n Stats for set number : {:?}", i );
-        to_diff_pair( file_set );
+        to_diff_pair( file_set, idp_tool_options.open_threshold );
     }
     println!( " \n\n DONE " );
-} 
+}  

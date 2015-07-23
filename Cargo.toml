@@ -10,3 +10,4 @@ name = "idp_tool"
 
 [dependencies]
 byteorder = "*"
+getopts = "0.2"

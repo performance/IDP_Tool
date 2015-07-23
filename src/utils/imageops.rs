@@ -152,7 +152,7 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<V
 }
 
 
-pub fn to_diff_pair( file_set : &Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ) {
+pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ) {
 
     let open_test_files = file_set.iter().filter_map( | this_entry | {
         let this_entry_path = this_entry.path();
@@ -170,7 +170,7 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry> ) -> ( Option<Vec<Pixel> >, Optio
         let lhs = oit.next().unwrap().path();
         let rhs = oit.next().unwrap().path(); 
         let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "open abs diff failed ");
-        let ( marked_pixels_opt, bad_opens ) = mark_open_bads (0.3f32, &open_diff_pix );
+        let ( marked_pixels_opt, bad_opens ) = mark_open_bads ( open_threshold, &open_diff_pix );
         let marked_pixels = marked_pixels_opt.expect( "marking open bads failed for short test ");
         // let bad_opens = count_bad_pixels( 0.3f32, &open_diff_pix, &open_diff_pix );
         print!(" number of bad opens for 1717 - 2525 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
