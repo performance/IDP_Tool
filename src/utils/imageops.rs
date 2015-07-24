@@ -9,6 +9,45 @@ use utils::file::{
     absolute_difference_of_IDP_Imges
 };
 
+fn mark_ignored_pixels( ps: &Vec<Pixel>,  width: usize, height: usize, ignore_edges: usize ) ->  Option< Vec<Pixel> > {
+    let total_pix = ps.len();
+    // assert that this is equal to width times height
+    
+    let mut mask_pixels : Vec<Pixel> = Vec::with_capacity(total_pix); 
+    let mut pit = ps.iter();
+    
+    for row in 0..height {
+        if row < ignore_edges || row >= ( height - ignore_edges ) {
+            for _col in 0..width {
+                let ignored_pix   = pit.next().unwrap();
+                let ignored_value = ignored_pix.value;
+                mask_pixels.push( Pixel{ value : ignored_value, valid: BadType::Ignored } );
+            }
+        } else {
+            for col in 0..width {
+                let this_pix = pit.next().unwrap();
+                let this_valid = this_pix.valid;
+                let this_value = this_pix.value;
+
+                if col < ignore_edges || col >= ( width - ignore_edges ) {
+                    let mask_pix = if BadType::DeadBand == this_valid {
+                        Pixel{ value : this_value, valid: this_valid  }
+                    } else {
+                        Pixel{ value : this_value, valid: BadType::Ignored } 
+                    };
+                    mask_pixels.push( mask_pix ); 
+                }
+                else {
+                    let mask_pix = Pixel{ value : this_value, valid: this_valid  };
+                    mask_pixels.push( mask_pix );
+                }
+            }
+        }
+    }
+    Some ( mask_pixels )
+}
+
+
 
 fn mark_open_bads( threshold: f32, ps: &Vec<Pixel> )  ->  ( Option<Vec<Pixel> >, u64 ) {
     let total_pix = ps.len();
@@ -62,7 +101,7 @@ fn median_of_unmasked_pixel_values ( ms: &Vec<Pixel>, ps: &Vec<Pixel> ) -> Optio
 
 // masks out all the columns and rows with > 50% bad pixels in them
 // TODO: use a struct to return stuff 
-fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<( Vec<Pixel>, u64, u64, u64, u64 ) >{
+fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<( Vec<Pixel>, u64, u64, u64 ) >{
     let total_pix = ps.len();
     // assert that this is equal to width times height
     
@@ -101,7 +140,8 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<(
     let mut num_bad_row = 0u64;
     let mut num_bad_both = 0u64;
     let mut num_dead_band = 0u64;
-    let mut num_unknown = 0u64; 
+    let mut num_unknown = 0u64;
+    let mut num_ignored = 0u64; 
     
     for row in 0..height {
         for col in 0..width {
@@ -109,11 +149,10 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<(
             let this_valid = this_pix.valid;
             let this_value = this_pix.value;
 
-            let mask_pix = if BadType::DeadBand == this_valid {
-                    num_dead_band += 1;
-                    Pixel{ value : this_value, valid: this_valid  }
-                } else {
-
+            let mask_pix = match this_valid {
+                BadType::DeadBand => { num_dead_band += 1; Pixel{ value : this_value, valid: this_valid  } },
+                BadType::Ignored  => { num_ignored   += 1; Pixel{ value : this_value, valid: this_valid  } },
+                _ => {
                     match ( bad_cols[ col ], bad_rows[ row ] ) {
                         ( true,  true  ) => { num_bad_both += 1; Pixel{ value : 999f32, valid: BadType::OpenBadBoth } },
                         ( true,  false ) => { num_bad_col  += 1; Pixel{ value : 999f32, valid: BadType::OpenBadCol  } },
@@ -123,11 +162,13 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<(
                             Pixel{ value : this_value, valid: this_valid  }
                         },
                     }
-                };
+                }
+            };
             mask_pixels.push( mask_pix );
         }
     }
-    let num_total = num_bad_col + num_bad_row + num_bad_both + num_dead_band + num_unknown;
+    let _num_total = num_bad_col + num_bad_row + num_bad_both + num_dead_band + num_ignored + num_unknown;
+    let num_measured = total_pix as u64 - ( num_ignored + num_dead_band );
 
     // println!( " \
     //     number of bad columns             = {:?} \n \
@@ -147,13 +188,13 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<(
     //        num_unknown,
     //        num_total
     //    );
-    Some ( ( mask_pixels, number_of_bad_columns as u64, number_of_bad_rows as u64, num_total, num_dead_band ) )
+    Some ( ( mask_pixels, number_of_bad_columns as u64, number_of_bad_rows as u64, num_measured as u64 ) )
 }
 
-
-pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) -> 
+// TODO: use a struct to get the measurement data out
+pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32, ignore_edges : usize ) -> 
     ( ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ),
-      ( u64, u64, u64, u64, f32 , u64, u64 ) 
+      ( u64, u64, u64, u64, f32 , u64 ) 
     ) {
 
     let open_test_files = file_set.iter().filter_map( | this_entry | {
@@ -166,18 +207,19 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) ->
          }
     } ).collect::<Vec<&DirEntry>>();
     
-    let ( open_diff_pixels, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total, num_dead_band )=
+    let ( open_diff_pixels, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total )=
     { 
         let mut oit = open_test_files.iter();
         let lhs = oit.next().unwrap().path();
         let rhs = oit.next().unwrap().path(); 
         let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "open abs diff failed ");
-        let ( marked_pixels_opt, bad_opens ) = mark_open_bads ( open_threshold, &open_diff_pix );
-        let marked_pixels = marked_pixels_opt.expect( "marking open bads failed for short test ");
-        let ( mask_for_shorts, number_of_bad_columns, number_of_bad_rows, num_total, num_dead_band ) 
+        let ig_marked_pixels = mark_ignored_pixels( &open_diff_pix, 1864, 1632, ignore_edges ).expect(" could not mark ignored pixels");
+        let ( marked_pixels_opt, bad_opens ) = mark_open_bads ( open_threshold, &ig_marked_pixels );
+        let marked_pixels = marked_pixels_opt.expect( "marking open bads failed for open test ");
+        let ( mask_for_shorts, number_of_bad_columns, number_of_bad_rows, num_total ) 
                 = pixels_to_mask( &marked_pixels, 1864, 1632 ).expect( " unable to create mask" );
         // print!(" number of bad opens for 1717 - 2525 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
-        ( open_diff_pix, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total, num_dead_band )
+        ( open_diff_pix, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total )
     };
     let short_test_files = &file_set.iter().filter_map( | this_entry | {
         let this_entry_path = this_entry.path();
@@ -208,7 +250,7 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32 ) ->
     };
     (
         ( Some( open_diff_pixels ) , Some( short_diff_pixels ) ),
-        ( bad_opens, number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts , num_total, num_dead_band )
+        ( bad_opens, number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts , num_total )
 
     )
 }

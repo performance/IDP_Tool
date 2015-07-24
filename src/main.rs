@@ -39,7 +39,7 @@ fn main() {
     };
 
     println!(" test_no, case x, case y,  #open_bad_pixels, open_threshold, \
-               #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #total_pixels, #deadband_pix" 
+               #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #measured_pixels" 
             );
     for ( i, file_set ) in file_sets.iter().enumerate() {
         let diren = &file_set[0];
@@ -47,12 +47,12 @@ fn main() {
         let (x,y) = extract_x_y_from_name( &path );
         let (
            ( _open_diff_pixels_opt , _short_diff_pixels_opt ),
-            ( bad_opens, number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts , num_total, num_dead_band )
-        ) = to_diff_pair( file_set, idp_tool_options.open_threshold );
+            ( bad_opens, number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts , num_total )
+        ) = to_diff_pair( file_set, idp_tool_options.open_threshold, idp_tool_options.ignore_edges );
         println!("{:?}, {:?}, {:?}, {:?}, {:?}, \
-                  {:?}, {:?}, {:?}, {:?}, {:?}, {:?} ", 
-                   i,     x,    y,   bad_opens, &idp_tool_options.open_threshold, 
-                   number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts, num_total, num_dead_band  );
+                  {:?}, {:?}, {:?}, {:?}, {:?} ", 
+                   i,     x,    y,   bad_opens, idp_tool_options.open_threshold, 
+                   number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts, num_total  );
 
     }
     println!( " \n\n DONE " );
