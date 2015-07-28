@@ -1,5 +1,7 @@
 extern crate byteorder;
-extern crate getopts;
+// extern crate getopts;
+#[macro_use]
+extern crate clap;
 extern crate regex;
 
 mod stream;
@@ -19,7 +21,8 @@ use utils::file::{
     extract_x_y_from_name
 };
 
-use utils::cmdline_options::{
+//use utils::cmdline_options::{
+use utils::claptions::{
     IDPToolOptions
 };
 
@@ -48,7 +51,7 @@ fn main() {
         let (
            ( _open_diff_pixels_opt , _short_diff_pixels_opt ),
             ( bad_opens, number_of_bad_columns, number_of_bad_rows, bad_shorts, threshold_for_shorts , num_total )
-        ) = to_diff_pair( file_set, idp_tool_options.open_threshold, idp_tool_options.ignore_edges );
+        ) = to_diff_pair( file_set, idp_tool_options.open_threshold, idp_tool_options.short_threshold, idp_tool_options.ignore_edges );
         println!("{:?}, {:?}, {:?}, {:?}, {:?}, \
                   {:?}, {:?}, {:?}, {:?}, {:?} ", 
                    i,     x,    y,   bad_opens, idp_tool_options.open_threshold, 

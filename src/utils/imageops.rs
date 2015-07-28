@@ -192,7 +192,7 @@ fn pixels_to_mask( ps: &Vec<Pixel>,  width: usize, height: usize  ) ->  Option<(
 }
 
 // TODO: use a struct to get the measurement data out
-pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32, ignore_edges : usize ) -> 
+pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32, short_threshold: f32, ignore_edges : usize ) -> 
     ( ( Option<Vec<Pixel> >, Option<Vec<Pixel> > ),
       ( u64, u64, u64, u64, f32 , u64 ) 
     ) {
@@ -241,7 +241,7 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32, ignore_edge
 
         // let threshold_for_shorts  = 0.5f32;         
         // stack over flow!! using the constant above does not cause the SO
-        let threshold_for_shorts  = median_of_unmasked_pixel_values( &mask_for_shorts, &short_diff_pix ).expect(" unable to collect unmasked pixels");
+        let threshold_for_shorts  = short_threshold * median_of_unmasked_pixel_values( &mask_for_shorts, &short_diff_pix ).expect(" unable to collect unmasked pixels");
         
         let bad_shorts = count_bad_pixels( threshold_for_shorts, &mask_for_shorts, &short_diff_pix );
         // println!( "at line: {:?} ", line!() );
