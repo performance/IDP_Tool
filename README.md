@@ -26,7 +26,7 @@ The structure of the test directory is
   * Short bad pixels are All the unknown short pixels with value less than 75% of the medain of unknown short pixels
 
 Expects a final output to stdout as a csv file 
-case x, case y,  #open_bad_pixels, open_threshold, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #( total_pixels - deadband )
 
-8,      12,      76656,            0.3,            21,              23,            1270302,           0.48789775,        
+test_no, case x, case y,  #open_bad_pixels, open_threshold, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #measured_pixels
+2, 12, 5, 1163259, 0.3, 16, 706, 709095, 0.20827341, 2598544 
 

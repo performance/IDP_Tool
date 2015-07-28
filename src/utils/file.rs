@@ -153,6 +153,8 @@ fn process_tail_dirs<F>(dir: &Path, cb: &mut F) -> io::Result<()> where F: FnMut
 }
 
 
+// how do we handle empty dirs?
+
 // this function enables recursively walking down/ visiting a directory tree.
 // But we only need to go two levels deep.
 // based on the example at https://doc.rust-lang.org/std/fs/fn.read_dir.html
