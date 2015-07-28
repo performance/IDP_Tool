@@ -1,18 +1,19 @@
 Tool to measure Open and Short Bad Bump Bonds from IDP images.
-
+``` text
 USAGE:
-	idp_tool.exe [FLAGS] [OPTIONS] --test_dir <test_directory>
+	idp_tool.exe [FLAGS] [OPTIONS] --test_dir < test_directory >
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -i, --ignore_edges <ignore_edges>          number of rows/cols to ignore along the edges.
-    -o, --open_threshold <open_threshold>      Threshold to use for open test.
-    -s, --short_threshold <short_threshold>    % of the median to use as threshold for short test.
-    -t, --test_dir <test_directory>            Test area with each sub dir containing idp images.
+    -i, --ignore_edges < ignore_edges >          number of rows/cols to ignore along the edges.
+    -o, --open_threshold < open_threshold >      Threshold to use for open test.
+    -s, --short_threshold < short_threshold >    % of the median to use as threshold for short test.
+    -t, --test_dir < test_directory >            Test area with each sub dir containing idp images.
 
+```
 With this tool, The user passes in a test directory and obtains defect counts for images
 
 idp_tool -t < test dir > -o < open Threshold > 
@@ -44,3 +45,9 @@ test_no, case x, case y,  #open_bad_pixels, open_threshold, #open_bad_cols, #ope
 
 
 2, 12, 5, 1163259, 0.3, 16, 706, 709095, 0.20827341, 2598544 
+
+
+To redirect the output to a csv file, use 
+``` Bash
+    idp_tool.exe -t test -o 0.3 -i 10 -s 0.75 > asdfg 2>&1
+```
