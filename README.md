@@ -41,11 +41,12 @@ The structure of the test directory is
 
 Expects a final output to stdout as a csv file 
 
+``` csv
 test_no, case x, case y,  #open_bad_pixels, open_threshold, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #measured_pixels
 
 
 2, 12, 5, 1163259, 0.3, 16, 706, 709095, 0.20827341, 2598544 
-
+```
 
 To redirect the output to a csv file, use 
 ``` Bash

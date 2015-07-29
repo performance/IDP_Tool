@@ -9,6 +9,8 @@ use utils::file::{
     absolute_difference_of_IDP_Imges
 };
 
+use super::dimensions::{WIDTH, HEIGHT };
+
 fn mark_ignored_pixels( ps: &Vec<Pixel>,  width: usize, height: usize, ignore_edges: usize ) ->  Option< Vec<Pixel> > {
     let total_pix = ps.len();
     // assert that this is equal to width times height
@@ -213,11 +215,11 @@ pub fn to_diff_pair( file_set : &Vec<DirEntry>, open_threshold: f32, short_thres
         let lhs = oit.next().unwrap().path();
         let rhs = oit.next().unwrap().path(); 
         let open_diff_pix = absolute_difference_of_IDP_Imges( &lhs, &rhs ).expect( "open abs diff failed ");
-        let ig_marked_pixels = mark_ignored_pixels( &open_diff_pix, 1864, 1632, ignore_edges ).expect(" could not mark ignored pixels");
+        let ig_marked_pixels = mark_ignored_pixels( &open_diff_pix, WIDTH, HEIGHT, ignore_edges ).expect(" could not mark ignored pixels");
         let ( marked_pixels_opt, bad_opens ) = mark_open_bads ( open_threshold, &ig_marked_pixels );
         let marked_pixels = marked_pixels_opt.expect( "marking open bads failed for open test ");
         let ( mask_for_shorts, number_of_bad_columns, number_of_bad_rows, num_total ) 
-                = pixels_to_mask( &marked_pixels, 1864, 1632 ).expect( " unable to create mask" );
+                = pixels_to_mask( &marked_pixels, WIDTH, HEIGHT ).expect( " unable to create mask" );
         // print!(" number of bad opens for 1717 - 2525 \n( {:?},\n- {:?} ) = {:?}\n", lhs, rhs, bad_opens );
         ( open_diff_pix, mask_for_shorts, bad_opens, number_of_bad_columns, number_of_bad_rows, num_total )
     };

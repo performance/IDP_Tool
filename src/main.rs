@@ -35,7 +35,7 @@ fn main() {
     
     let input_dir = Path::new( &idp_tool_options.test_directory );
     let mut file_sets = Vec::with_capacity(10);
-    let _walk_result = walk_test_dir( input_dir, &mut | entries | file_sets.push( entries ) );
+    let _walk_result = walk_test_dir( input_dir, &mut | entries | if entries.len() == 4usize { file_sets.push( entries ) } );
     let _ = match _walk_result {
       Ok( _ ) => {},
       Err( e ) => { println!("The error is : {:?}" , e  ); return; },
