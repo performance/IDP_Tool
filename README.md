@@ -40,12 +40,15 @@ The structure of the test directory is
   * Short bad pixels are All the unknown short pixels with value less than 75% of the medain of unknown short pixels
 
 Expects a final output to stdout as a csv file 
+short_bad_diagonal_pairs: adjacent diagonals that have more than 50% bad short pixels.
 
 ``` csv
-test_no, case x, case y,  #open_bad_pixels, open_threshold, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #measured_pixels
 
-
-2, 12, 5, 1163259, 0.3, 16, 706, 709095, 0.20827341, 2598544 
+test_no, case x, case y,  #open_bad_pixels, open_threshold, number_of_open_bads_in_bad_cols, number_of_open_bads_in_bad_rows, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, number_of_short_bads_not_in_bad_diagonals, number_of_bad_diagonals, number_of_adjacent_bad_diagonals, #measured_pixels
+0, 11, 11, 1286563, 0.5, 15983, 5967, 18, 6, 485760, 0.22023636, 6111, 411, 22, 2598544
+1, 11, 12, 580196, 0.5, 826, 0, 1, 0, 0, 0.38518336, 0, 0, 0, 2598544
+2, 12, 5, 2034947, 0.5, 2034947, 1730675, 1844, 1202, 0, 0, 0, 0, 0, 2598544
+3, 15, 11, 1593095, 0.5, 1152980, 900652, 1272, 809, 0, 0.36080655, 0, 0, 0, 2598544
 ```
 
 To redirect the output to a csv file, use 

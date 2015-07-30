@@ -29,6 +29,7 @@ pub enum BadType {
     OpenBadRow,
     OpenBadCol,
     OpenBadBoth,
+    ShortBad,
     
     // Short_Level1,
     // Short_Level2,
@@ -40,3 +41,18 @@ pub    value: f32,
 pub    valid: BadType
 }
 
+//pub struct _BondingStats {
+//    pub bad_opens : u64, 
+//    pub number_of_bad_columns: u64,
+//    pub number_of_bad_rows: u64,
+//    pub number_of_bad_shorts: u64,
+//    pub threshold_for_shorts: u64,
+//    pub number_of_pixels_measured: u64,
+//    pub number_of_open_bads_in_bad_cols: u64,
+//    pub number_of_open_bads_in_bad_rows: u64
+//}
+
+pub struct ShortDiagonalStats {
+    pub number_of_pixels_measured: u64,
+    pub number_of_bad_shorts: u64
+}

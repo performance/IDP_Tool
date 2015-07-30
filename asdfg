@@ -1,16 +1,16 @@
 The following test options will be used: 
 test_directory  : "test"
-open_threshold  : 0.3
-short_threshold : 0.15
+open_threshold  : 0.5
+short_threshold : 0.75
 ignore_edges    : 10
- test_no, case x, case y,  #open_bad_pixels, open_threshold, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, #measured_pixels
-0, 11, 11, 7967, 0.3, 0, 0, 14745, 0.05375501, 2598544 
-1, 11, 12, 1506, 0.3, 0, 0, 0, 0.076226525, 2598544 
-2, 12, 5, 1163259, 0.3, 16, 706, 56561, 0.031241013, 2598544 
-3, 15, 11, 17378, 0.3, 0, 2, 46, 0.07064048, 2598544 
-4, 15, 12, 34297, 0.3, 1, 5, 1638, 0.06738561, 2598544 
-5, 8, 11, 21801, 0.3, 4, 4, 2630, 0.07311362, 2598544 
-6, 8, 12, 18007, 0.3, 1, 2, 3636, 0.07224659, 2598544 
+ test_no, case x, case y,  #open_bad_pixels, open_threshold, number_of_open_bads_in_bad_cols, number_of_open_bads_in_bad_rows, #open_bad_cols, #open_bad_rows, #short_bad_pixels, short_threshold, number_of_short_bads_not_in_bad_diagonals, number_of_bad_diagonals, number_of_adjacent_bad_diagonals, #measured_pixels
+0, 11, 11, 1286563, 0.5, 15983, 5967, 18, 6, 485760, 0.22023636, 6111, 411, 22, 2598544
+1, 11, 12, 580196, 0.5, 826, 0, 1, 0, 0, 0.38518336, 0, 0, 0, 2598544
+2, 12, 5, 2034947, 0.5, 2034947, 1730675, 1844, 1202, 0, 0, 0, 0, 0, 2598544
+3, 15, 11, 1593095, 0.5, 1152980, 900652, 1272, 809, 0, 0.36080655, 0, 0, 0, 2598544
+4, 15, 12, 928469, 0.5, 40504, 41596, 47, 33, 76808, 0.33557788, 76807, 1, 0, 2598544
+5, 8, 11, 1170490, 0.5, 28662, 25752, 30, 24, 2842, 0.3712533, 0, 2, 1, 2598544
+6, 8, 12, 802514, 0.5, 14117, 8268, 15, 7, 6905, 0.3687662, 532, 6, 1, 2598544
  
 
  DONE 
